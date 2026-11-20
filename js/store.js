@@ -54,6 +54,7 @@ async function crearDemo() {
       avisarAuth();
     },
     async logout() { try { sessionStorage.removeItem(SES); } catch {} avisarAuth(); },
+    async recuperar() { throw new Error("En modo demostración no se envían correos de recuperación."); },
     watchUsuarios(cb) { uSubs.add(cb); queueMicrotask(() => cb(uLista())); return () => uSubs.delete(cb); },
     async crearUsuario({ usuario, nombre, rol, pass }) {
       usuario = limpiarUsuario(usuario);
@@ -162,6 +163,20 @@ async function crearFirebase() {
       catch (e) { throw new Error(/weak/.test(e.code || "") ? "La contraseña nueva es muy débil." : "No se pudo cambiar (" + (e.code || e.message) + ")."); }
     },
     async logout() { await A.signOut(auth); },
+    async recuperar(usuario) {
+      if (!String(usuario || "").includes("@")) throw new Error("Para recuperar tu contraseña escribe tu correo en Usuario. Si entras con un usuario sin @, pide al dueño que te restablezca la contraseña.");
+      const correo = correoDe(usuario);
+      auth.languageCode = "es";
+      try { await A.sendPasswordResetEmail(auth, correo); }
+      catch (e) {
+        const c = e.code || "";
+        if (/invalid-email|missing-email/.test(c)) throw new Error("Ese correo no es válido. Revísalo e intenta de nuevo.");
+        if (/too-many-requests/.test(c)) throw new Error("Demasiados intentos. Espera unos minutos e intenta de nuevo.");
+        if (/network/.test(c)) throw new Error("Sin conexión a internet.");
+        throw new Error("No se pudo enviar el correo (" + c + ").");
+      }
+      return correo;
+    },
     async guardarNegocio(obj) { await F.setDoc(F.doc(db, "config", "negocio"), obj, { merge: true }); },
     async guardarCategoria(id, obj) { const { id: _, ...o } = obj; await F.setDoc(F.doc(db, "categorias", id), o, { merge: true }); },
     async borrarCategoria(id) { await F.deleteDoc(F.doc(db, "categorias", id)); },
