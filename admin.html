@@ -62,6 +62,9 @@ mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='
 .big:active{transform:translateY(4px);box-shadow:0 1px 0 #a87a00}
 .big:disabled{opacity:.7;cursor:wait}
 .hint{margin:16px 0 0;font-size:14px;color:var(--soft);text-align:center}
+.lok{background:#2e7d3218;color:#1b5e20;border-radius:12px;padding:10px 12px;font-weight:700;margin-bottom:12px}
+.olvide{display:block;margin:14px auto 0;background:none;border:0;padding:6px;font:inherit;font-weight:700;color:var(--ink);text-decoration:underline;cursor:pointer}
+.olvide:disabled{opacity:.6;cursor:wait}
 .hint b{color:var(--ink)}
 
 /* ---------- APP ---------- */
@@ -322,6 +325,7 @@ textarea{resize:vertical;min-height:80px}
       <span class="kick">¡Bienvenido a la cocina!</span>
       <h2>Entrar al panel</h2>
       <div class="err" id="lErr" role="alert" hidden></div>
+      <div class="lok" id="lOk" role="status" hidden></div>
       <label class="fld"><span class="lbl">Usuario</span>
         <span class="inp"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
         <input id="lUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Tu usuario" required></span></label>
@@ -331,6 +335,7 @@ textarea{resize:vertical;min-height:80px}
         <button type="button" class="eye" id="eye" aria-label="Mostrar contraseña" aria-pressed="false"></button></span></label>
       <p class="caps" id="caps" hidden>Ojo: tienes las mayúsculas activadas.</p>
       <button class="big" id="lBtn">Entrar a la cocina</button>
+      <button type="button" class="olvide" id="lOlvide">¿Olvidaste tu contraseña?</button>
       <p class="hint" id="lHint" hidden></p>
       <p class="lcred">Versión 1.0.0 · Desarrollado por <b>Aidilh Lucatero</b> (SoftGala)</p>
     </form>
@@ -577,12 +582,21 @@ function procesarImagen(file, maxW = 720, maxH = 720) {
 $("#fLogin").onsubmit = async (e) => {
   e.preventDefault();
   const u = $("#lUser").value.trim(), p = pass.value, err = $("#lErr");
-  err.hidden = true;
+  err.hidden = true; $("#lOk").hidden = true;
   if (!u || !p) { err.textContent = "Escribe tu usuario y tu contraseña."; err.hidden = false; return; }
   const b = $("#lBtn"); b.disabled = true; b.textContent = "Entrando…";
   try { await store.login(u, p); pass.value = ""; }
   catch (x) { err.textContent = x.message; err.hidden = false; err.style.animation = "none"; void err.offsetWidth; err.style.animation = ""; }
   finally { b.disabled = false; b.textContent = "Entrar a la cocina"; }
+};
+$("#lOlvide").onclick = async () => {
+  const u = $("#lUser").value.trim(), err = $("#lErr"), ok = $("#lOk"), b = $("#lOlvide");
+  err.hidden = true; ok.hidden = true;
+  if (!u) { err.textContent = "Escribe tu correo en Usuario y vuelve a tocar «¿Olvidaste tu contraseña?»."; err.hidden = false; $("#lUser").focus(); return; }
+  b.disabled = true; b.textContent = "Enviando…";
+  try { const c = await store.recuperar(u); ok.textContent = `Listo. Si ${c} tiene cuenta, te llegará un correo para crear una contraseña nueva. Revisa también la carpeta de spam.`; ok.hidden = false; }
+  catch (x) { err.textContent = x.message; err.hidden = false; }
+  finally { b.disabled = false; b.textContent = "¿Olvidaste tu contraseña?"; }
 };
 $("#out").onclick = async () => { if (await confirmar("¿Cerrar sesión?", "Tendrás que volver a escribir tu contraseña.", "Salir")) store.logout(); };
 
