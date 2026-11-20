@@ -1,0 +1,42 @@
+rules_version = '2';
+// Reglas de seguridad de La Cocina del Meño.
+// - Cualquiera puede LEER el menú (es público).
+// - EDITAR el menú: usuarios dados de alta en el panel y activos (Dueño o Encargado).
+// - Administrar USUARIOS: solo los Dueños.
+// - DUEÑOS INICIALES: escribe aquí el correo del primer dueño (el mismo de js/config.js).
+//   Puede entrar aunque todavía no exista en la lista de usuarios.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function duenoInicial() {
+      return request.auth != null && request.auth.token.email in [
+        'meno@cocinadelmeno.app'
+      ];
+    }
+    function perfil() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+    function registrado() {
+      return request.auth != null && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+    function activo()   { return registrado() && perfil().activo == true; }
+    function esDueno()  { return duenoInicial() || (activo() && perfil().rol == 'dueno'); }
+    function puedeEditar() { return esDueno() || activo(); }
+
+    match /config/{doc}      { allow read: if true; allow write: if puedeEditar(); }
+    match /categorias/{doc}  { allow read: if true; allow write: if puedeEditar(); }
+    match /productos/{doc}   { allow read: if true; allow write: if puedeEditar(); }
+
+    match /usuarios/{uid} {
+      // Cada quien puede leer su propio perfil (para saber si tiene acceso); los dueños leen todos.
+      allow read: if request.auth != null && (request.auth.uid == uid || esDueno());
+      allow create, delete: if esDueno() && request.auth.uid != uid
+                            || duenoInicial() && request.auth.uid == uid;
+      allow update: if esDueno() && request.auth.uid != uid
+                    && request.resource.data.rol in ['dueno', 'encargado']
+                    && request.resource.data.usuario == resource.data.usuario;
+    }
+
+    match /{otro=**} { allow read, write: if false; }
+  }
+}
