@@ -8,12 +8,12 @@
 // ==========================================================
 
 export const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyAwfRQf6KcbJpklJngyxnQmgZ7380zEiHg",
+  authDomain: "la-cocina-del-meno.firebaseapp.com",
+  projectId: "la-cocina-del-meno",
+  storageBucket: "la-cocina-del-meno.firebasestorage.app",
+  messagingSenderId: "209756105443",
+  appId: "1:209756105443:web:1e7bb8fd472d793505f3d6"
 };
 
 // Los usuarios del panel se escriben sin "@". Por dentro se convierten en
