@@ -24,7 +24,7 @@ export const DOMINIO_USUARIOS = "cocinadelmeno.app";
 // Usuario(s) DUEÑO iniciales. Créalos en Firebase → Authentication y escríbelos
 // aquí (y en firestore.rules). Al entrar por primera vez reciben el rol de Dueño
 // y desde el panel pueden dar de alta a los demás usuarios.
-export const DUENOS_INICIALES = ["meno"];
+export const DUENOS_INICIALES = ["meno", "aidilhlucatero71@gmail.com"];
 
 // Solo para MODO DEMOSTRACIÓN (no aplica cuando conectas Firebase).
 export const DEMO_USUARIO = "admin";
