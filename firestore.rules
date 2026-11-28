@@ -10,7 +10,8 @@ service cloud.firestore {
 
     function duenoInicial() {
       return request.auth != null && request.auth.token.email in [
-        'meno@cocinadelmeno.app'
+        'meno@cocinadelmeno.app',
+        'aidilhlucatero71@gmail.com'
       ];
     }
     function perfil() {
